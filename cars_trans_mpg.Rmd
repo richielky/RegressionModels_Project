@@ -11,8 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ### Executive Summary
 
-We have conclude that manual transmission are better than automatic in terms of Miles per gallon.
-
+From this analysis we found out that manual transmission are better in per gallon than automatic transmission.  With 95% confidence, we estimate that a the change from automatic to manual transmission results in a 2.2 to 6.39 increase in miles per gallon for the cars. A linear regression model determined by ANOVA explained that 84% of the variation in mpg.  We have conclude that manual transmission are better than automatic in terms of Miles per gallon
 
 #### MGP of Automatic and Manual Transmission
 You work for Motor Trend, a magazine about the automobile industry. Looking at a data set of a collection of cars, they are interested in exploring the relationship between a set of variables and miles per gallon (MPG) (outcome). They are particularly interested in the following two questions:
@@ -68,17 +67,21 @@ boxplot(auto$mpg,manual$mpg,col=c("red","blue"),varwidth=TRUE,xlab="Transmission
 
 #### Density Plot for Weight
 
-This plot reveals that the difference between the means illustrated earlier has one important cause: the weight is correlated with the number of miles per galleon and the cars with automatic transmission are on average lighter than the cars with manual transmission. In order to get an accurate comparison between these two transmission types, the analysis will have to take this fact into account.
+This plot reveals that the difference between the means illustrated earlier has one important cause: the weight is correlated with the number of miles per galleon and the cars with automatic transmission are on average lighter than the cars with manual transmission. 
 
 
 ```{r}
 plot(density(mtcars$wt), main = "Weight Density")
 ```
 
+#### Density Plot Between Automatic & Manual Transmission
+
+**The red line represent automatic and blue represent manual transmission**
+
 ```{r}
 a=density(auto$mpg)
 m=density(manual$mpg)
-plot(m,ylim=c(0,.1),col="darkblue",lwd=1,xlab="mpg",main="Density of MPG by Transmission Type for MtCars")
+plot(m,ylim=c(0,.1),col="darkblue",lwd=1,xlab="mpg",main="Density of MPG by Transmission")
 lines(a,col="red",lwd=1)
 ```
 
@@ -88,9 +91,58 @@ lines(a,col="red",lwd=1)
 library(ggplot2)
 library(GGally)
 pairsGG=mtcars[,c(1,2,3,4,6,9)]
-ggpairs(pairsGG,lower = list(continuous="smooth",theme_set(theme_bw())),title="mtcars",colour = "am")
+ggpairs(pairsGG,lower = list(continuous="smooth",theme_set(theme_bw())),title="CORELATION OF MTCAR",colour = "am")
 ```
 
+#### Building the Model
+
+##### Simple Linear Regression
+
+```{r}
+fitme1 <- lm(mpg~am, data = mtcars)
+summary(fitme1)
+```
+
+##### Multivariate Regression Analysis
+
+```{r}
+step_model = step(lm(data = mtcars, mpg ~ .),trace=0,steps=10000)
+summary(step_model)
+```
+
+##### Capture 84% of the total variance
+
+This model explains 84% of the variance in miles per gallon (mpg). Moreover, we see that wt and qsec did indeed confound the relationship between am and mpg (mostly wt). Now when we read the coefficient for am, we say that, on average, manual transmission cars have 2.94 MPGs more than automatic transmission cars. However this effect is much lower than when we did not adjust for weight and qsec.
+
+```{r}
+fitme2 <- lm(mpg~am + wt + qsec, data = mtcars)
+anova(fitme1, fitme2)
+```
+```{r}
+summary(fitme2)
+```
+
+#### Residual Diagnostics
+
+```{r}
+par(mfrow = c(2,2))
+plot(fitme2)
+```
+
+#### Bootstrapping
+
+```{r}
+library(relaimpo)
+fitme3 = lm(mpg ~ cyl + hp+wt+am, data = mtcars)
+summary(fitme3)
+
+boot <- boot.relimp(fitme3, b = 500, type = c("lmg"), rank = TRUE,diff = TRUE, rela = TRUE)
+boot2=booteval.relimp(boot) # print result
+plot(booteval.relimp(boot,sort=TRUE)) # plot result 
+```
+
+
+#### Conclusion
 
 
 
