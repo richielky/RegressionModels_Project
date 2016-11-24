@@ -16,13 +16,13 @@ From this analysis we found out that manual transmission are better in per gallo
 #### MGP of Automatic and Manual Transmission
 You work for Motor Trend, a magazine about the automobile industry. Looking at a data set of a collection of cars, they are interested in exploring the relationship between a set of variables and miles per gallon (MPG) (outcome). They are particularly interested in the following two questions:
 
-1. “Is an automatic or manual transmission better for MPG”
+1. ???Is an automatic or manual transmission better for MPG???
 2. "Quantify the MPG difference between automatic and manual transmissions"
 
 #### Dataset
 *mtcars*
 
-The data was extracted from the 1974 Motor Trend US magazine, and comprises fuel consumption and 10 aspects of automobile design and performance for 32 automobiles (1973–74 models).
+The data was extracted from the 1974 Motor Trend US magazine, and comprises fuel consumption and 10 aspects of automobile design and performance for 32 automobiles (1973???74 models).
 
 #### Format Description
 A data frame with 32 observations on 11 variables.
@@ -144,6 +144,13 @@ plot(booteval.relimp(boot,sort=TRUE)) # plot result
 
 #### Conclusion
 
+With 95% confidence, we estimate that a the change from automatic to manual transmission results in a 2.2 to 6.39 increase in miles per gallon for the cars. In conclusion, the manual transmission is better than automatic transmission for mpg.
 
-
-
+```{r}
+dat <- mtcars[, c("mpg", "wt", "qsec", "am")]
+fitme4 <- lm(mpg ~ . - 1, data = dat)
+summary(fitme4)$coefficients
+coefsum <- summary(fitme4)$coefficients
+int <- coefsum["am", 1] + c(-1, 1) * qt(0.975, df = fitme4$df) * coefsum["am", 2]
+int
+```
