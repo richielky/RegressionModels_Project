@@ -1,0 +1,97 @@
+---
+title: "Transmission Type Miles Per Gallon Relationship"
+author: "Richie Liew"
+date: "23rd Nov 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Executive Summary
+
+We have conclude that manual transmission are better than automatic in terms of Miles per gallon.
+
+
+#### MGP of Automatic and Manual Transmission
+You work for Motor Trend, a magazine about the automobile industry. Looking at a data set of a collection of cars, they are interested in exploring the relationship between a set of variables and miles per gallon (MPG) (outcome). They are particularly interested in the following two questions:
+
+1. “Is an automatic or manual transmission better for MPG”
+2. "Quantify the MPG difference between automatic and manual transmissions"
+
+#### Dataset
+*mtcars*
+
+The data was extracted from the 1974 Motor Trend US magazine, and comprises fuel consumption and 10 aspects of automobile design and performance for 32 automobiles (1973–74 models).
+
+#### Format Description
+A data frame with 32 observations on 11 variables.
+
+Col | label | Description
+---|---|---
+[, 1] |	mpg	| Miles/(US) gallon
+[, 2]	| cyl |	Number of cylinders
+[, 3]	|	disp | Displacement (cu.in.)
+[, 4]	|	hp | Gross horsepower 
+[, 5]	|	drat |	Rear axle ratio 
+[, 6]	|	wt |	Weight (1000 lbs) 
+[, 7]	|	qsec | 1/4 mile time 
+[, 8]	|	vs | V/S 
+[, 9]	|	am | Transmission (0 = automatic, 1 = manual) 
+[,10]	| gear | Number of forward gears 
+[,11]	| carb | Number of carburetors
+
+
+#### Processing the Data
+
+We will use gear, vs, carb, cyl and am for the analysis with proper factor and numeric.
+Separating Automatic and Manual Transmission.
+
+```{r}
+mtcars$gear = factor(mtcars$gear)
+mtcars$vs = factor(mtcars$vs)
+mtcars$carb = factor(mtcars$carb)
+mtcars$cyl = factor(mtcars$cyl)
+mtcars$am = factor(mtcars$am, labels = c("Automatic", "Manual"))
+auto = subset(mtcars, am == "Automatic")
+manual = subset(mtcars, am == "Manual")
+```
+
+#### Comparing MGG with Automatic Versus Manual Transmission
+
+We display a boxplot to show that there is a difference between Automatic and Manual Transmission with MPG.
+
+```{r}
+boxplot(auto$mpg,manual$mpg,col=c("red","blue"),varwidth=TRUE,xlab="Transmission Type",ylab="mpg",main="MPG of Automatic vs. Manual Transmission",names=c("Automatic","Manual"))
+```
+
+#### Density Plot for Weight
+
+This plot reveals that the difference between the means illustrated earlier has one important cause: the weight is correlated with the number of miles per galleon and the cars with automatic transmission are on average lighter than the cars with manual transmission. In order to get an accurate comparison between these two transmission types, the analysis will have to take this fact into account.
+
+
+```{r}
+plot(density(mtcars$wt), main = "Weight Density")
+```
+
+```{r}
+a=density(auto$mpg)
+m=density(manual$mpg)
+plot(m,ylim=c(0,.1),col="darkblue",lwd=1,xlab="mpg",main="Density of MPG by Transmission Type for MtCars")
+lines(a,col="red",lwd=1)
+```
+
+#### Pair Plot
+
+```{r}
+library(ggplot2)
+library(GGally)
+pairsGG=mtcars[,c(1,2,3,4,6,9)]
+ggpairs(pairsGG,lower = list(continuous="smooth",theme_set(theme_bw())),title="mtcars",colour = "am")
+```
+
+
+
+
+
