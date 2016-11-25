@@ -1,0 +1,177 @@
+---
+title: "Transmission Type Miles Per Gallon Relationship"
+author: "Richie Liew"
+date: "Nov 23, 2016"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(fig.width=13, fig.height=9, fig.path='Figs/',
+                      echo=FALSE, warning=FALSE, message=FALSE)
+```
+
+#### Executive Summary
+
+From this analysis we found out that manual transmission are better in per gallon than automatic transmission.  With 95% confidence, we estimate that a the change from automatic to manual transmission results in a 2.2 to 6.39 increase in miles per gallon for the cars. A linear regression model determined by ANOVA explained that 84% of the variation in mpg.  We have conclude that manual transmission are better than automatic in terms of Miles per gallon
+
+#### MGP of Automatic and Manual Transmission
+You work for Motor Trend, a magazine about the automobile industry. Looking at a data set of a collection of cars, they are interested in exploring the relationship between a set of variables and miles per gallon (MPG) (outcome). They are particularly interested in the following two questions:
+
+1. "Is an automatic or manual transmission better for MPG""
+2. "Quantify the MPG difference between automatic and manual transmissions"
+
+#### Dataset
+*mtcars*
+
+The data was extracted from the 1974 Motor Trend US magazine, and comprises fuel consumption and 10 aspects of automobile design and performance for 32 automobiles (1973-74 models).
+
+#### Format Description
+A data frame with 32 observations on 11 variables.
+
+Col | label | Description
+---|---|---
+[, 1] |	mpg	| Miles/(US) gallon
+[, 2]	| cyl |	Number of cylinders
+[, 3]	|	disp | Displacement (cu.in.)
+[, 4]	|	hp | Gross horsepower 
+[, 5]	|	drat |	Rear axle ratio 
+[, 6]	|	wt |	Weight (1000 lbs) 
+[, 7]	|	qsec | 1/4 mile time 
+[, 8]	|	vs | V/S 
+[, 9]	|	am | Transmission (0 = automatic, 1 = manual) 
+[,10]	| gear | Number of forward gears 
+[,11]	| carb | Number of carburetors
+
+#### Processing the Data
+
+We will use gear, vs, carb, cyl and am for the analysis with proper factor and numeric.
+Separating Automatic and Manual Transmission.
+
+````{r,echo=FALSE,cache=TRUE,warning=FALSE,cache=TRUE,,fig.height=9,fig.width=13}
+mtcars$gear = factor(mtcars$gear)
+mtcars$vs = factor(mtcars$vs)
+mtcars$carb = factor(mtcars$carb)
+mtcars$cyl = factor(mtcars$cyl)
+auto = subset(mtcars, am == 0)
+manual = subset(mtcars, am == 1)
+```
+
+#### Comparing MGG with Automatic Versus Manual Transmission
+
+We display a boxplot to show that there is a difference between Automatic and Manual Transmission with MPG.  From the plot we can clearly see that there is an increase in MPG with manual transmission.
+
+```{r,echo=FALSE,cache=TRUE,warning=FALSE,cache=TRUE,,fig.height=9,fig.width=13}
+boxplot(auto$mpg,manual$mpg,col=c("red","blue"),varwidth=TRUE,xlab="Transmission Type",ylab="mpg",main="MPG of Automatic vs. Manual Transmission",names=c("Automatic","Manual"))
+```
+
+#### Density Plot for Weight
+
+This plot reveals that the difference between the means illustrated earlier has one important cause: the weight is correlated with the number of miles per galleon and the cars with automatic transmission are on average lighter than the cars with manual transmission. 
+
+
+```{r,echo=FALSE,cache=TRUE,warning=FALSE,cache=TRUE,,fig.height=9,fig.width=13}
+plot(density(mtcars$wt), main = "Weight Density")
+```
+
+#### Density Plot Between Automatic & Manual Transmission
+
+The *red* represent automatic and *blue* represent manual transmission
+
+```{r,echo=FALSE,cache=TRUE,warning=FALSE,cache=TRUE,,fig.height=9,fig.width=13}
+a=density(auto$mpg)
+m=density(manual$mpg)
+plot(m,ylim=c(0,.1),col="darkblue",lwd=1,xlab="mpg",main="Density of MPG by Transmission")
+lines(a,col="red",lwd=1)
+```
+
+#### Pair Plot
+
+We see there are correlations between these variables showing significantly against each other.
+
+```{r,echo=FALSE,message=FALSE,,fig.height=10,fig.width=12,cache=TRUE,warning=FALSE}
+library(ggplot2)
+library(GGally)
+pairsGG=mtcars[,c(1,2,3,4,6,9)]
+ggpairs(pairsGG,lower = list(continuous="smooth",theme_set(theme_bw())),title="CORRELATION OF MTCAR",colour = "am")
+```
+
+#### Building the Model
+
+We will use simple linear regression and multivariate regression analysis to build the regression model for this dataset.
+
+##### Simple Linear Regression
+
+Use mpg as the dependent variable and am as the independent variable to fit a linear regression.
+
+```{r,echo=FALSE,cache=TRUE,warning=FALSE,cache=TRUE,,fig.height=9,fig.width=13}
+fitme1 <- lm(mpg~am, data = mtcars)
+summary(fitme1)
+```
+
+##### Multivariate Regression Analysis
+
+The following step function will find the best model.
+
+```{r,echo=FALSE,cache=TRUE,warning=FALSE,cache=TRUE,,fig.height=9,fig.width=13}
+step_model = step(lm(data = mtcars, mpg ~ .),trace=0,steps=10000)
+summary(step_model)
+```
+
+##### Capture 84% of the total variance
+
+This model explains 84% of the variance in miles per gallon (mpg). Moreover, we see that wt and qsec did indeed confound the relationship between am and mpg (mostly wt). Now when we read the coefficient for am, we say that, on average, manual transmission cars have 2.94 MPGs more than automatic transmission cars. However this effect is much lower than when we did not adjust for weight and qsec.
+
+```{r,echo=FALSE,cache=TRUE,warning=FALSE,cache=TRUE,,fig.height=9,fig.width=13}
+fitme2 <- lm(mpg~am + wt + qsec, data = mtcars)
+anova(fitme1, fitme2)
+```
+
+```{r,echo=FALSE,cache=TRUE,warning=FALSE,cache=TRUE,,fig.height=9,fig.width=13}
+summary(fitme2)
+```
+
+#### Residual Diagnostics
+
+Residual plot will check for non-normality and examine any heteroskedacity between the fitted and residual values.
+
+```{r,echo=FALSE,cache=TRUE,warning=FALSE,cache=TRUE,,fig.height=9,fig.width=13}
+par(mfrow = c(2,2))
+plot(fitme2)
+```
+
+#### Bootstrapping
+
+This will interpret the importance of variables 
+This will show that Automatic Transmission is the least important among these variables around 14%.
+
+```{r,echo=FALSE,cache=TRUE,warning=FALSE,cache=TRUE,,fig.height=9,fig.width=13}
+library(relaimpo)
+fitme3 = lm(mpg ~ cyl + hp+wt+am, data = mtcars)
+summary(fitme3)
+
+boot <- boot.relimp(fitme3, b = 500, type = c("lmg"), rank = TRUE,diff = TRUE, rela = TRUE)
+boot2=booteval.relimp(boot) # print result
+plot(booteval.relimp(boot,sort=TRUE)) # plot result 
+```
+
+#### Conclusion
+
+With 95% confidence, we estimate that a the change from automatic to manual transmission results in a 2.2 to 6.39 increase in miles per gallon for the cars. There is also a difference in mgp with transmission type.  Therefore in conclusion, the manual transmission is better than automatic transmission for mpg.
+
+```{r,echo=FALSE,cache=TRUE,warning=FALSE,cache=TRUE,,fig.height=9,fig.width=13}
+summary(lm(mpg ~ ., data = mtcars))$coefficients
+```
+
+```{r,echo=FALSE,cache=TRUE,warning=FALSE,cache=TRUE,,fig.height=9,fig.width=13}
+dat <- mtcars[, c("mpg", "wt", "qsec", "am")]
+fitme4 <- lm(mpg ~ . - 1, data = dat)
+summary(fitme4)$coefficients
+```
+
+```{r,echo=FALSE,cache=TRUE,warning=FALSE,cache=TRUE,,fig.height=9,fig.width=13}
+coefsum <- summary(fitme4)$coefficients
+int <- coefsum['am',1] + c(-1, 1) * qt(0.975, df = fitme4$df) * coefsum['am',2]
+int
+```
