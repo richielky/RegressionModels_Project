@@ -3,8 +3,8 @@ title: "Transmission Type Miles Per Gallon Relationship"
 author: "Richie Liew"
 date: "Nov 23, 2016"
 output:
-  html_document: default
   pdf_document: default
+  html_document: default
 ---
 
 ```{r global_options, include=FALSE}
